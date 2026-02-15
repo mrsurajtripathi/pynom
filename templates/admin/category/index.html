@@ -1,5 +1,8 @@
 {% extends "./layout.html" %}
 {% block title %}New Category{% endblock %}
+{% set toptitle = "Categories" %}
+{% set quickbuttons=[{"title":"New","path":"/admin/categories/new","icon":""}] %}
+
 {% block content %}
 <div class="container">
 <table class="table">
