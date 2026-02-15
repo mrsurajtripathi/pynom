@@ -2,26 +2,19 @@ from flask import Flask
 from flask import render_template, abort, redirect, url_for
 from flask import request
 from flask import session
+from config.settings import user_dict , roles, category_item, category
+from modules.authmodule import isvalid
+
 app = Flask(__name__)
 
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
-roles=('Admin','Viewer')
-
-# adding user for static login dictionary has been created down
-user_dict={}
-user_dict['amit@mail.com']={id:1,"name":"Amit","password":"mypass"}
-user_dict['suraj@mail.com']={id:2,"name":"Suraj","password":"pass2"}
-user_dict['amit@mail.com']['role']=roles[1]
-user_dict['suraj@mail.com']['role']=roles[0]
 
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
 
-@app.route('/home')
-def hello(name=None):
-    print(session)
+@app.route('/admin')
+def dashboard(name=None):
     if 'user' in session:
         name=session["user"]['name']
     return render_template('admin/dashboard.html', person=name)
@@ -33,7 +26,7 @@ def login():
         if request.form['email']:
             if (isvalid(request.form['email'],request.form['password'])):
                 session['user'] = user_dict[request.form['email']]
-                return redirect(url_for('hello'))
+                return redirect(url_for('dashboard'))
             else:
                 error='Invalid Username or password'
         else:
@@ -44,15 +37,6 @@ def login():
 def test_page():
     print(user_dict)
     return ''
-
-def isvalid(username,password): 
-    dictU=user_dict[username]
-    dictP = user_dict[username]['password']
-    print(f"{username==dictU} {password==dictP} {user_dict[username]} {user_dict[username]['password']}")
-    if (username in user_dict and password == dictP):
-        return True
-    else:
-        return False
     
 @app.route('/logout')
 def logout():
@@ -60,4 +44,32 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
+@app.route('/admin/blogs')
+def admin_blogs():
+    error=None
+    if 'user' in session:
+        return render_template('admin/blogs/new.html',error=error)
+    else:
+        return redirect(url_for('login'))
+@app.route('/admin/categories')
+def admin_category():
+    error=None
+    print(category)
+    return render_template('admin/category/index.html',category=category)
+
+@app.route('/admin/categories/new',methods=['GET','POST'])
+def admin_newcategory():
+    error=None
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        if request.form['name']:
+            category_item['name']=request.form['name'];
+            category_item['status']= request.form['status']
+            category.append(category_item)
+            print(category);
+            return redirect(url_for('admin_category'))
+        else:
+            error='Please Enter Category'
+    return render_template('admin/category/new.html',error=error)
 
