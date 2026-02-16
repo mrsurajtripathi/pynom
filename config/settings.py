@@ -8,8 +8,4 @@ user_dict['amit@mail.com']['role']=roles[1]
 user_dict['suraj@mail.com']['role']=roles[0]
 
 category=[]
-category_item={}
-category.append(category_item)
-
 posts=[]
-post_data={}

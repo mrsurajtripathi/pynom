@@ -2,7 +2,7 @@ from flask import Flask
 from flask import render_template, abort, redirect, url_for
 from flask import request
 from flask import session
-from config.settings import user_dict , roles, category_item, category
+from config.settings import user_dict , roles, category,posts
 from modules.authmodule import isvalid
 
 app = Flask(__name__)
@@ -48,13 +48,35 @@ def logout():
 def admin_blogs():
     error=None
     if 'user' in session:
-        return render_template('admin/blogs/new.html',error=error)
+        return render_template('admin/blogs/index.html',postlist=posts)
     else:
         return redirect(url_for('login'))
+    
+@app.route('/admin/blogs/new',methods=['GET','POST'])
+def admin_blognew():
+    error=None
+    if 'user' in session:
+        if request.method=='post':
+            if request.form['title'] and request.form['category']:
+                blogitems={};
+                blogitems['title']=request.form['title']
+                blogitems['category']=request.form['category']
+                blogitems['content']= request.form['content']
+                blogitems['tags']=request.form['tags']
+                posts.append(blogitems)
+                print(posts)
+                return url_for('admin_blogs')
+            else:
+                error='Title and description is required'
+        return render_template('admin/blogs/new.html',error=error,category=category)
+    else:
+        return redirect(url_for('login'))
+    
+    
 @app.route('/admin/categories')
 def admin_category():
     error=None
-    print(category)
+    print("category",category)
     return render_template('admin/category/index.html',category=category)
 
 @app.route('/admin/categories/new',methods=['GET','POST'])
@@ -64,10 +86,10 @@ def admin_newcategory():
         return redirect(url_for('login'))
     if request.method == 'POST':
         if request.form['name']:
+            category_item={}
             category_item['name']=request.form['name'];
             category_item['status']= request.form['status']
             category.append(category_item)
-            print(category);
             return redirect(url_for('admin_category'))
         else:
             error='Please Enter Category'
